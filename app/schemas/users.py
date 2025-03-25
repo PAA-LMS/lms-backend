@@ -85,6 +85,55 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     username: Optional[str] = None
 
+# Course Material Schemas
+class CourseMaterialBase(BaseModel):
+    title: str
+    description: Optional[str] = None
+    material_type: str  # e.g., "drive_url", "file", "link"
+    content: str  # URL, embedded content, etc.
+
+class CourseMaterialCreate(CourseMaterialBase):
+    week_id: int
+
+class CourseMaterialUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    material_type: Optional[str] = None
+    content: Optional[str] = None
+
+class CourseMaterial(CourseMaterialBase):
+    id: int
+    week_id: int
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+# Course Week Schemas
+class CourseWeekBase(BaseModel):
+    title: str
+    description: Optional[str] = None
+    week_number: int
+
+class CourseWeekCreate(CourseWeekBase):
+    course_id: int
+
+class CourseWeekUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    week_number: Optional[int] = None
+
+class CourseWeek(CourseWeekBase):
+    id: int
+    course_id: int
+    created_at: datetime
+    updated_at: datetime
+    materials: List[CourseMaterial] = []
+
+    class Config:
+        from_attributes = True
+
 # Course Schemas
 class CourseBase(BaseModel):
     title: str
@@ -102,6 +151,7 @@ class Course(CourseBase):
     lecturer_id: int
     created_at: datetime
     updated_at: datetime
+    weeks: List[CourseWeek] = []
 
     class Config:
         from_attributes = True 

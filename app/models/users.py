@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, Table, DateTime
+from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, Table, DateTime, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from ..database.database import Base
@@ -12,12 +12,12 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True)
-    username = Column(String, unique=True, index=True)
-    hashed_password = Column(String)
-    role = Column(String)  # "lecturer" or "student"
-    first_name = Column(String)
-    last_name = Column(String)
+    email = Column(String(255), unique=True, index=True)
+    username = Column(String(100), unique=True, index=True)
+    hashed_password = Column(String(255))
+    role = Column(String(50))  # "lecturer" or "student"
+    first_name = Column(String(100))
+    last_name = Column(String(100))
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
@@ -31,9 +31,9 @@ class LecturerProfile(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
-    department = Column(String)
-    bio = Column(String)
-    qualification = Column(String)
+    department = Column(String(100))
+    bio = Column(String(500))
+    qualification = Column(String(255))
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
@@ -46,9 +46,9 @@ class StudentProfile(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
-    enrollment_number = Column(String, unique=True, index=True)
+    enrollment_number = Column(String(50), unique=True, index=True)
     semester = Column(Integer)
-    program = Column(String)
+    program = Column(String(100))
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
@@ -60,11 +60,44 @@ class Course(Base):
     __tablename__ = "courses"
     
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, index=True)
-    description = Column(String)
+    title = Column(String(200), index=True)
+    description = Column(String(500))
     lecturer_id = Column(Integer, ForeignKey("lecturer_profiles.id"))
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
     
     # Relationships
-    lecturer = relationship("LecturerProfile", back_populates="courses") 
+    lecturer = relationship("LecturerProfile", back_populates="courses")
+    weeks = relationship("CourseWeek", back_populates="course", cascade="all, delete-orphan")
+
+# CourseWeek model to organize materials by week
+class CourseWeek(Base):
+    __tablename__ = "course_weeks"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    course_id = Column(Integer, ForeignKey("courses.id"))
+    title = Column(String(200))
+    description = Column(String(500))
+    week_number = Column(Integer)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    
+    # Relationships
+    course = relationship("Course", back_populates="weeks")
+    materials = relationship("CourseMaterial", back_populates="week", cascade="all, delete-orphan")
+
+# CourseMaterial model for individual materials (links, docs, etc.)
+class CourseMaterial(Base):
+    __tablename__ = "course_materials"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    week_id = Column(Integer, ForeignKey("course_weeks.id"))
+    title = Column(String(200))
+    description = Column(String(500))
+    material_type = Column(String(50))  # e.g., "drive_url", "file", "link"
+    content = Column(Text)  # Text type doesn't need length specification
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    
+    # Relationships
+    week = relationship("CourseWeek", back_populates="materials") 

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
-from typing import Optional, List
+from typing import Optional, List, Union
 from datetime import datetime
 
 # Base Schema for Lecturer Profile
@@ -85,11 +85,37 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     username: Optional[str] = None
 
+# Assignment Submission Schemas
+class AssignmentSubmissionBase(BaseModel):
+    submission_url: str
+    
+class AssignmentSubmissionCreate(AssignmentSubmissionBase):
+    assignment_id: int
+
+class AssignmentSubmissionUpdate(BaseModel):
+    submission_url: Optional[str] = None
+    status: Optional[str] = None
+    grade: Optional[str] = None
+    feedback: Optional[str] = None
+
+class AssignmentSubmission(AssignmentSubmissionBase):
+    id: int
+    assignment_id: int
+    student_id: int
+    submitted_at: datetime
+    updated_at: datetime
+    status: str
+    grade: Optional[str] = None
+    feedback: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
 # Course Material Schemas
 class CourseMaterialBase(BaseModel):
     title: str
     description: Optional[str] = None
-    material_type: str  # e.g., "drive_url", "file", "link"
+    material_type: str  # e.g., "drive_url", "file", "link", "assignment"
     content: str  # URL, embedded content, etc.
 
 class CourseMaterialCreate(CourseMaterialBase):
@@ -106,6 +132,7 @@ class CourseMaterial(CourseMaterialBase):
     week_id: int
     created_at: datetime
     updated_at: datetime
+    submissions: List[AssignmentSubmission] = []
 
     class Config:
         from_attributes = True

@@ -7,7 +7,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
 from ..schemas.users import TokenData
-from ..models.users import User
+from ..models.users import User, StudentProfile
 from ..database.database import get_db
 
 # Configuration
@@ -19,7 +19,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # OAuth2 setup
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")  # Updated to match the new token URL
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
@@ -75,5 +75,32 @@ async def get_current_lecturer(current_user: User = Depends(get_current_active_u
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized. You must be a lecturer to perform this action.",
+        )
+    return current_user
+
+# Function to check if user is student and get their profile
+async def get_current_student(current_user: User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    if current_user.role != "student":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized. You must be a student to perform this action.",
+        )
+    
+    # Get the student profile
+    student_profile = db.query(StudentProfile).filter(StudentProfile.user_id == current_user.id).first()
+    if not student_profile:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Student profile not found. Please complete your profile setup."
+        )
+    
+    return current_user
+
+# Function to check if user is admin
+async def get_current_admin(current_user: User = Depends(get_current_active_user)):
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized. You must be an admin to perform this action.",
         )
     return current_user 

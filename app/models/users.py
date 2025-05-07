@@ -64,6 +64,7 @@ class StudentProfile(Base):
     # Add relationship to assignment submissions
     submissions = relationship("AssignmentSubmission", back_populates="student")
     exam_submissions = relationship("ExamSubmission", back_populates="student")
+    payment_submissions = relationship("PaymentSubmission", back_populates="student")
 
 # Course model to be used with lecturer
 class Course(Base):

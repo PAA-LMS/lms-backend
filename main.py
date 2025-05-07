@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 from app.database.database import engine, Base
-from app.routers import users, auth, courses, course_weeks, course_materials, assignments, admin, exams
+from app.routers import users, auth, courses, course_weeks, course_materials, assignments, admin, exams, finance
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -28,6 +28,7 @@ app.include_router(course_materials.router)
 app.include_router(assignments.router)
 app.include_router(admin.router)
 app.include_router(exams.router)
+app.include_router(finance.router)
 
 @app.get("/")
 async def root():

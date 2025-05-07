@@ -8,17 +8,18 @@ class Exam(Base):
     __tablename__ = "exams"
 
     id = Column(Integer, primary_key=True, index=True)
+    course_name = Column(String, nullable=False)
     title = Column(String, nullable=False)
     description = Column(String)
-    course_id = Column(Integer, ForeignKey("courses.id"), nullable=False)
-    start_time = Column(DateTime, nullable=False)
-    end_time = Column(DateTime, nullable=False)
-    total_marks = Column(Float, nullable=False)
-    file_path = Column(String, nullable=True)
+    exam_url = Column(String)
+    due_date = Column(DateTime, nullable=False)
+    status = Column(String, default="active")
+    created_by = Column(Integer, ForeignKey("users.id"))
     created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
-    course = relationship("Course", back_populates="exams")
+    creator = relationship("User", foreign_keys=[created_by])
     submissions = relationship("ExamSubmission", back_populates="exam")
 
 class ExamSubmission(Base):
@@ -27,10 +28,14 @@ class ExamSubmission(Base):
     id = Column(Integer, primary_key=True, index=True)
     exam_id = Column(Integer, ForeignKey("exams.id"), nullable=False)
     student_id = Column(Integer, ForeignKey("student_profiles.id"), nullable=False)
-    answers = Column(JSON, nullable=False)  # Stores question-answer pairs
-    submission_time = Column(DateTime, default=datetime.utcnow)
-    marks = Column(Float, nullable=True)
+    submission_url = Column(String, nullable=False)  # Google Drive URL for the submission
+    status = Column(String, default="submitted")
+    grade = Column(String, nullable=True)
     feedback = Column(String, nullable=True)
+    submitted_at = Column(DateTime, default=datetime.utcnow)
+    graded_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
     exam = relationship("Exam", back_populates="submissions")

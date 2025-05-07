@@ -5,10 +5,9 @@ from typing import Dict, Optional
 class ExamBase(BaseModel):
     title: str
     description: str
-    course_id: int
-    start_time: datetime
-    end_time: datetime
-    total_marks: float
+    course_name: str
+    exam_url: str
+    due_date: datetime
 
 class ExamCreate(ExamBase):
     pass
@@ -16,20 +15,24 @@ class ExamCreate(ExamBase):
 class ExamUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
-    start_time: Optional[datetime] = None
-    end_time: Optional[datetime] = None
-    total_marks: Optional[float] = None
+    course_name: Optional[str] = None
+    exam_url: Optional[str] = None
+    due_date: Optional[datetime] = None
+    status: Optional[str] = None
 
 class Exam(ExamBase):
     id: int
-    file_path: Optional[str] = None
+    status: str
+    created_by: int
     created_at: datetime
+    updated_at: datetime
 
     class Config:
         orm_mode = True
+        from_attributes = True
 
 class ExamSubmissionBase(BaseModel):
-    answers: Dict[str, str]  # Question ID to answer mapping
+    submission_url: str  # Google Drive URL for the submission
 
 class ExamSubmissionCreate(ExamSubmissionBase):
     pass
@@ -38,9 +41,14 @@ class ExamSubmission(ExamSubmissionBase):
     id: int
     exam_id: int
     student_id: int
-    submission_time: datetime
-    marks: Optional[float] = None
+    status: str
+    grade: Optional[str] = None
     feedback: Optional[str] = None
+    submitted_at: datetime
+    graded_at: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
-        orm_mode = True 
+        orm_mode = True
+        from_attributes = True 

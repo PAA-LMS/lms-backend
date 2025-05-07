@@ -63,7 +63,8 @@ class StudentProfile(Base):
     user = relationship("User", back_populates="student_profile")
     # Add relationship to assignment submissions
     submissions = relationship("AssignmentSubmission", back_populates="student")
-    
+    exam_submissions = relationship("ExamSubmission", back_populates="student")
+
 # Course model to be used with lecturer
 class Course(Base):
     __tablename__ = "courses"
